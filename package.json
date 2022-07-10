@@ -2,22 +2,22 @@
   "name": "react-native-pdf-thumbnail",
   "version": "1.0.2",
   "description": "Generate thumbnail for PDF files",
-  "main": "lib/commonjs/index",
-  "module": "lib/module/index",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
   "types": "lib/typescript/src/index.d.ts",
-  "react-native": "src/index",
+  "react-native": "src/index.tsx",
   "source": "src/index",
   "files": [
     "src",
     "lib",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
     "android",
     "ios",
     "cpp",
     "react-native-pdf-thumbnail.podspec",
-    "!lib/typescript/example",
-    "!**/__tests__",
-    "!**/__fixtures__",
-    "!**/__mocks__"
+    "!lib/typescript/example"
   ],
   "scripts": {
     "test": "jest",
@@ -43,7 +43,6 @@
   "homepage": "https://github.com/songsterq/react-native-pdf-thumbnail#readme",
   "devDependencies": {
     "@commitlint/config-conventional": "^8.3.4",
-    "react-native-builder-bob": "^0.18.3",
     "@react-native-community/eslint-config": "^2.0.0",
     "@release-it/conventional-changelog": "^1.1.4",
     "@types/jest": "^26.0.0",
@@ -59,6 +58,7 @@
     "prettier": "^2.0.5",
     "react": "16.11.0",
     "react-native": "0.62.2",
+    "react-native-builder-bob": "^0.18.3",
     "release-it": "^13.5.8",
     "typescript": "^3.8.3"
   },
@@ -131,6 +131,15 @@
     "useTabs": false
   },
   "@react-native-community/bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  },
+  "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
     "targets": [
