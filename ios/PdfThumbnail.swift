@@ -8,8 +8,8 @@ class PdfThumbnail: NSObject {
         return false
     }
     
-    func getCachesDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
     
@@ -22,17 +22,14 @@ class PdfThumbnail: NSObject {
             prefix = "pdf"
         }
         let random = Int.random(in: 0 ..< Int.max)
-        return "\(prefix)-thumbnail-\(page)-\(random).png"
+        return "\(prefix)-thumbnail-\(page)-\(random)@2x.png"
     }
 
     func generatePage(pdfPage: PDFPage, outputFileName: String, page: Int) -> Dictionary<String, Any>? {
+        let outputFile = getDocumentsDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
         let pageRect = pdfPage.bounds(for: .mediaBox)
-        // let image = pdfPage.thumbnail(of: CGSize(width: pageRect.width, height: pageRect.height), for: .mediaBox)
-        let outputFile = getCachesDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
         let renderer = UIGraphicsImageRenderer(size: pageRect.size)
         let image = renderer.image { ctx in
-            UIColor.clear.set()
-            ctx.fill(CGRect(x: 0, y: 0, width: pageRect.width, height: pageRect.height))
             ctx.cgContext.translateBy(x: -pageRect.origin.x, y: pageRect.size.height - pageRect.origin.y)
             ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
             pdfPage.draw(with: .mediaBox, to: ctx.cgContext)
