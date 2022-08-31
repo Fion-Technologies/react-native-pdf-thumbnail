@@ -22,14 +22,14 @@ class PdfThumbnail: NSObject {
             prefix = "pdf"
         }
         let random = Int.random(in: 0 ..< Int.max)
-        return "\(prefix)-thumbnail-\(page)-\(random).jpg"
+        return "\(prefix)-thumbnail-\(page)-\(random).png"
     }
 
     func generatePage(pdfPage: PDFPage, outputFileName: String, page: Int) -> Dictionary<String, Any>? {
         let pageRect = pdfPage.bounds(for: .mediaBox)
         let image = pdfPage.thumbnail(of: CGSize(width: pageRect.width, height: pageRect.height), for: .mediaBox)
         let outputFile = getCachesDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
-        guard let data = image.jpegData(compressionQuality: 100) else {
+        guard let data = image.pngData() else {
             return nil
         }
         do {

@@ -100,12 +100,12 @@ class PdfThumbnailModule(reactContext: ReactApplicationContext) : ReactContextBa
     canvas.drawBitmap(bitmap, 0f, 0f, null)
     bitmap.recycle()
 
-    val outputFile = File.createTempFile(getOutputFilePrefix(filePath, page), ".jpg", reactApplicationContext.cacheDir)
+    val outputFile = File.createTempFile(getOutputFilePrefix(filePath, page), ".png", reactApplicationContext.cacheDir)
     if (outputFile.exists()) {
       outputFile.delete()
     }
     val out = FileOutputStream(outputFile)
-    bitmapWhiteBG.compress(Bitmap.CompressFormat.JPEG, 80, out)
+    bitmapWhiteBG.compress(Bitmap.CompressFormat.PNG, 100, out)
     bitmapWhiteBG.recycle()
     out.flush()
     out.close()
