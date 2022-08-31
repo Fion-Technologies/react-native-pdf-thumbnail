@@ -13,8 +13,8 @@ class PdfThumbnail: NSObject {
         return paths[0]
     }
     
-    func getOutputFilename(filePath: String, page: Int) -> String {
-        let components = filePath.components(separatedBy: "/")
+    func getOutputFilename(outputFileName: String, page: Int) -> String {
+        let components = outputFileName.components(separatedBy: "/")
         var prefix: String
         if let origionalFileName = components.last {
             prefix = origionalFileName.replacingOccurrences(of: ".", with: "-")
@@ -25,10 +25,10 @@ class PdfThumbnail: NSObject {
         return "\(prefix)-thumbnail-\(page)-\(random).jpg"
     }
 
-    func generatePage(pdfPage: PDFPage, filePath: String, page: Int) -> Dictionary<String, Any>? {
+    func generatePage(pdfPage: PDFPage, outputFileName: String, page: Int) -> Dictionary<String, Any>? {
         let pageRect = pdfPage.bounds(for: .mediaBox)
         let image = pdfPage.thumbnail(of: CGSize(width: pageRect.width, height: pageRect.height), for: .mediaBox)
-        let outputFile = getCachesDirectory().appendingPathComponent(getOutputFilename(filePath: filePath, page: page))
+        let outputFile = getCachesDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
         guard let data = image.jpegData(compressionQuality: 100) else {
             return nil
         }
@@ -60,38 +60,10 @@ class PdfThumbnail: NSObject {
             return
         }
 
-        if let pageResult = generatePage(pdfPage: pdfPage, filePath: filePath, page: page) {
+        if let pageResult = generatePage(pdfPage: pdfPage, outputFileName: "fion-geopdf", page: page) {
             resolve(pageResult)
         } else {
             reject("INTERNAL_ERROR", "Cannot write image data", nil)
         }
-    }
-
-    @available(iOS 11.0, *)
-    @objc(generateAllPages:withResolver:withRejecter:)
-    func generateAllPages(filePath: String, resolve:RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) -> Void {
-        guard let fileUrl = URL(string: filePath) else {
-            reject("FILE_NOT_FOUND", "File \(filePath) not found", nil)
-            return
-        }
-        guard let pdfDocument = PDFDocument(url: fileUrl) else {
-            reject("FILE_NOT_FOUND", "File \(filePath) not found", nil)
-            return
-        }
-
-        var result: [Dictionary<String, Any>] = []
-        for page in 0..<pdfDocument.pageCount {
-            guard let pdfPage = pdfDocument.page(at: page) else {
-                reject("INVALID_PAGE", "Page number \(page) is invalid, file has \(pdfDocument.pageCount) pages", nil)
-                return
-            }
-            if let pageResult = generatePage(pdfPage: pdfPage, filePath: filePath, page: page) {
-                result.append(pageResult)
-            } else {
-                reject("INTERNAL_ERROR", "Cannot write image data", nil)
-                return
-            }
-        }
-        resolve(result)
     }
 }
