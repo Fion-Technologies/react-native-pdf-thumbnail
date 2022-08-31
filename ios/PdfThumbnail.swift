@@ -27,8 +27,16 @@ class PdfThumbnail: NSObject {
 
     func generatePage(pdfPage: PDFPage, outputFileName: String, page: Int) -> Dictionary<String, Any>? {
         let pageRect = pdfPage.bounds(for: .mediaBox)
-        let image = pdfPage.thumbnail(of: CGSize(width: pageRect.width, height: pageRect.height), for: .mediaBox)
+        // let image = pdfPage.thumbnail(of: CGSize(width: pageRect.width, height: pageRect.height), for: .mediaBox)
         let outputFile = getCachesDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
+        let renderer = UIGraphicsImageRenderer(size: pageRect.size)
+        let image = renderer.image { ctx in
+            UIColor.clear.set()
+            ctx.fill(CGRect(x: 0, y: 0, width: pageRect.width, height: pageRect.height))
+            ctx.cgContext.translateBy(x: -pageRect.origin.x, y: pageRect.size.height - pageRect.origin.y)
+            ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+            pdfPage.draw(with: .mediaBox, to: ctx.cgContext)
+        }
         guard let data = image.pngData() else {
             return nil
         }
