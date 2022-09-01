@@ -22,23 +22,43 @@ class PdfThumbnail: NSObject {
             prefix = "pdf"
         }
         let random = Int.random(in: 0 ..< Int.max)
-        return "\(prefix)-thumbnail-\(page)-\(random)@2x.png"
+        return "\(prefix)-thumbnail-\(page)-\(random).jpg"
     }
 
     func generatePage(pdfPage: PDFPage, outputFileName: String, page: Int) -> Dictionary<String, Any>? {
+        /// Define destination path for the final JPEG image relative to the Documents directory.
         let outputFile = getDocumentsDirectory().appendingPathComponent(getOutputFilename(outputFileName: outputFileName, page: page))
+        
+        /// Bounds for capturing the JPEG image, in this case, the entire bounds of the media of the PDF page.
         let pageRect = pdfPage.bounds(for: .mediaBox)
-        let renderer = UIGraphicsImageRenderer(size: pageRect.size)
+        
+        /// Configuration for the UIGraphicsImageRenderer, which grants us a finer level of control over the graphics generation.
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = UIScreen.main.scale
+        
+        /// Begin a rendering context with the size of the PDF page and the scale of our display to ensure it shows at the ideal resolution.
+        let renderer = UIGraphicsImageRenderer(size: pageRect.size, format: format)
         let image = renderer.image { ctx in
+            /// Align the PDF based on the default CGContext origin placement (move to top-left instead of starting off on center point).
             ctx.cgContext.translateBy(x: -pageRect.origin.x, y: pageRect.size.height - pageRect.origin.y)
+            
+            /// Flip the context as CGContext begin counting from bottom instead of top.
             ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+            
+            /// Draw the full media box of the PDF page at full resolution onto the current CGContext.
             pdfPage.draw(with: .mediaBox, to: ctx.cgContext)
         }
-        guard let data = image.pngData() else {
+        
+        /// Safeguard to ensure we were able to convert the UIImage into valid JPEG Data (1.0 = no compression).
+        guard let data = image.jpegData(compressionQuality: 1.0) else {
             return nil
         }
+        
         do {
+            /// Write high resolution JPEG data to outputFile path, the image size should match the pageRect.
             try data.write(to: outputFile)
+
+            /// Output dimensions of the final image and the local Image URI we generated using the Documents directory and getOutputFilename().
             return [
                 "uri": outputFile.absoluteString,
                 "width": Int(pageRect.width),
